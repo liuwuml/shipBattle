@@ -6,28 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Battleship</title>
+  <link type="text/css" rel="stylesheet" href="BattleShip.css">
 
 
-  <style>
-    body {
-      background-color: black;
-    }
-
-    div#borad {
-      position: relative;
-      ;
-      width: 1024px;
-      height: 836px;
-      margin: auto;
-      background: url(borad.jpg) no-repeat;
-    }
-    div#messageArea{
-      position: absolute;
-      top:0px;
-      left: 0px;
-      color: rgb(83,175,19);
-    }
-  </style>
+  
 </head>
 
 <body>
@@ -47,9 +29,9 @@
 
       <tr>
         <td id="10"></td>
-        <td id="11"></td>
+        <td class="hit" id="11"></td>
         <td id="12"></td>
-        <td id="13"></td>
+        <td id="13" class="hit"></td> <!--看见军舰-->
         <td id="14"></td>
         <td id="15"></td>
         <td id="16"></td>
