@@ -1,6 +1,6 @@
 var view = {
   displayMessage: function (msg) {
-    var messageArea = document.getElementById("meassageArea");
+    var messageArea = document.getElementById("messageArea");
     messageArea.innerHTML = msg;
 
   },
@@ -10,7 +10,8 @@ var view = {
 
   },
   displayMiss: function (location) {
-
+    var cell = document.getElementById(location);
+    cell.setAttribute('class', 'miss');
   }
 }
 //view.displayMiss("00");
@@ -32,22 +33,22 @@ var view = {
 
 var model = {
   boardSize: 7,
-  numShip: 3,
+  numShips: 3,
   shipSunk: 0,
   shipLength: 3,
   //ships: [{ locations: ["06", "16", 26], hits: ["", "", ""] },
   //{ locations: ["24", "34", "44"], hits: ["", "", ""] },
   // { locations: ["10", "11", "12"], hits: ["", "", ""] }],
-  ships: [{ locations: ["0", "0", "0"], hits: ["", "", ""] },
-  { locations: ["0", "0", "0"], hits: ["", "", ""] },   //初始化为零
-  { locations: ["0", "0", "0"], hits: ["", "", ""] }],
+  ships: [{ locations: [0, 0, 0], hits: ["", "", ""] },
+  { locations: [0, 0, 0], hits: ["", "", ""] },   //初始化为零
+  { locations: [0, 0, 0], hits: ["", "", ""] }],
 
 
   fire: function (guess) {
-    for (var i = 0; i < this.numShip; i++) {
+    for (var i = 0; i < this.numShips; i++) {
       var ship = this.ships[i];//获取战舰。检查guess是否是该战舰占据的位置之一。
       var location = ship.locations;//获取战舰位置，如果guess包含在数组localions中，就说明击中了该战舰。
-      var index = locations.indexOf(guess);//再获取guess在数组localions中的索引。
+      var index = location.indexOf(guess);//再获取guess在数组localions中的索引。
       if (index >= 0) {
         ship.hits[index] = "hit";
         view.displayHit(guess);//告诉视图，玩家的猜测击中了战舰。
@@ -77,12 +78,12 @@ var model = {
   generateShipLocations: function () {
     var locations;
     for (var i = 0; i < this.numShips; i++) {
-      do {
-        locations = this.generateShip();
-      } while (this.collision(locations));
-      this.ships[i].locations = locations;
+        do {
+            locations = this.generateShip();
+        } while (this.collision(locations));
+        this.ships[i].locations = locations;
     }
-  },
+},
 
 
   generateShip: function () {
@@ -109,10 +110,10 @@ var model = {
     return newShipLocations;//使用战舰的位置填充这个数组后，将其返回给调用方法newShipLocations
   },
 
-  collision: function (location) {
-    for (var i = 0; i < this.numShip; i++) {
-      var ship = model.ship[i];
-      for (var j = 0; j < location.shipLength; j++) {//检查战舰的localions数组中的位置是否包含在既有战舰的localion数组中。
+  collision: function (locations) {
+    for (var i = 0; i < this.numShips; i++) {
+      var ship = model.ships[i];
+      for (var j = 0; j < locations.length; j++) {//检查战舰的localions数组中的位置是否包含在既有战舰的localion数组中。
         if (ship.locations.indexOf(locations[j]) >= 0) {//检查位置是否被既有战舰占据，如果返回的索引大于或当等于0，就说明被占据
           return true;//意味着发生了碰撞，从内部循环返回，将终止两个循环，退出函数并返回true
         }
@@ -127,22 +128,22 @@ function init() {//给fire！添加一个事件处理程序。
   fireButton.onclick = handleFireButton;//给这个按钮添加单击事件处理程序 handleFireButton。
 
   var guessInput = document.getElementById("guessInput");//添加新的处理程序。用于处理html输入字段的按键事件。
-  guessInput.onkeypress = handleonKeypress;
+  guessInput.onkeypress = handleKeyPress;
 
   model.generateShipLocations();
 }
 
 function parseGuess(guess) {
   var alphabat = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-  if (guess === null || guess.shipLength !== 2) {//检查guess不为null且长度为2.
+  if (guess === null || guess.length !== 2) {//检查guess不为null且长度为2.
     alert("Oops,please enter a letter and a number on the bored.")
   } else {
-    firstChar = guess.firstCharAt(0);//获取guess中的第一个字符
+    firstChar = guess.charAt(0);//获取guess中的第一个字符
     var row = alphabat.indexOf(firstChar);//再使用indexof获取0~6的数字，他是这个字母在数组中的位置。
-    var cloum = guess.firstCharAt(1);//获取第二个字符，表示列号
+    var cloum = guess.charAt(1);//获取第二个字符，表示列号
     if (isNaN(row) || isNaN(cloum)) {//使用函数isNaN检查row和cloum是否都是数字
       alert("Oops,that isn't on the borad.");
-    } else if (row < 0 || row >= model.boardSize) {//自动类型转换，检查他的值是否在0到6之间。
+    } else if (row < 0 || row >= model.boardSize|| cloum < 0 || cloum >= model.boardSize) {//自动类型转换，检查他的值是否在0到6之间。
       alert("Oops ,that's off the borad!");
     } else {
       return row + cloum;//结果是一个字符串
@@ -153,13 +154,13 @@ function parseGuess(guess) {
 
 
 var controller = {
-  guess: 0,
+  guesses: 0,
   processGuess: function (guess) {
     var location = parseGuess(guess);//使用parseGuess来验证玩家猜测的有效性
     if (location) {//只要返回的不是null，就说明获取的位置是有效的，null是一个假值。
       this.guesses++;//玩家猜测有效， guess加1，如果玩家输入的游戏板位置无效，不计入猜测次数
       var hit = model.fire(location);
-      if (hit && model.shipSunk === model.numShip) {//如果击中的战舰，且击沉的战舰数与游戏中包含的战舰数相等，就显示消息 他击沉了所有的战舰。
+      if (hit && model.shipSunk === model.numShips) {//如果击中的战舰，且击沉的战舰数与游戏中包含的战舰数相等，就显示消息 他击沉了所有的战舰。
         view.displayMessage("You sank all my battleships,in" + this.guesses + "guesses");
         //向玩家指出他经过多少次猜测就击中了所有的战舰。guess是this的对象，即controller的一个属性
       }
@@ -176,10 +177,8 @@ function handleFireButton() {
   guessInput.value = "";//将表单的输入元素的值重置为空字符串。玩家再次猜测时，无需选择并删除前一次的猜测。
 
 }
-window.onload = init;
 
-
-function handleonKeypress(e) {
+function handleKeyPress(e) {
   var fireButton = document.getElementById("fireButton");
   if (e.keyCode === 13) {//如果玩家按下的是回车键，事件对象的属性keyCode将为13，希望fire！按钮就像自己被单击一样行事
     fireButton.click();//调用fireButton的方法click，让他自己一样被单击了。
@@ -187,8 +186,4 @@ function handleonKeypress(e) {
   }
 
 }
-
-
-
-
-
+window.onload = init;
